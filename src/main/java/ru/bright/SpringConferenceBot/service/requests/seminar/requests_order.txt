@@ -1,0 +1,5 @@
+Seminar Leader
+Seminar Name
+Seminar Info
+Seminar Time
+Seminar Category

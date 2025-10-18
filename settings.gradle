@@ -1,0 +1,2 @@
+rootProject.name = 'conference-bot'
+include 'bot'

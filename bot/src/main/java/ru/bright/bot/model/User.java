@@ -3,9 +3,10 @@ package ru.bright.bot.model;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import ru.bright.bot.service.utils.Role;
 
 import java.io.Serializable;
-@Entity(name = "usersDataTable")
+@Entity(name = "user_table")
 public class User implements Serializable {
 
     @Id
@@ -15,7 +16,7 @@ public class User implements Serializable {
 
     @Getter
     @Setter
-    private String role;
+    private Role role;
 
     @Getter
     @Setter

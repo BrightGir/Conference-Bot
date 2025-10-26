@@ -19,7 +19,7 @@ public class LeaveSeminarCallbackAction implements CallbackAction {
     @Override
     public void action(Update update, User user) {
         long id = Long.parseLong(update.getCallbackQuery().getData().split("_")[2]);;
-        ScienceSeminar seminar = bot.getSeminarsManager().findById(id);
+        SeminarDTO seminar = bot.getSeminarsManager().findById(id);
         bot.sendRequest(new WaitingConfirmLeaveSeminarRequest(bot,user,seminar),5);
     }
 

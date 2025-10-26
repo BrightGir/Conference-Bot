@@ -19,7 +19,7 @@ public class AuthorizationCommand implements Command{
     @Override
     public boolean execute(Update update) {
         User user = bot.getUserManager().getUser(update.getMessage().getChatId());
-        if(user.getRole().equals(Role.UNAUTHORIZED_USER.toString())) {
+        if(user.getRole() == Role.UNAUTHORIZED_USER) {
             bot.sendRequest(new WaitingTokenRequest(bot, user), 5);
         }
         return true;

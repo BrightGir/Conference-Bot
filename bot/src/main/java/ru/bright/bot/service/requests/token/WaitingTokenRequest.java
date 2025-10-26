@@ -21,13 +21,13 @@ public class WaitingTokenRequest extends BaseRequest {
     @Override
     public boolean handle(Update update) {
         String msg = update.getMessage().getText();
-        String role = getBot().getRoleByToken(msg);
+        Role role = getBot().getRoleByToken(msg);
 
         if(role == null) {
             getBot().sendMessage(update.getMessage().getChatId(),"Токен не найден");
             return true;
         } else {
-            if(role.equals(Role.ADMIN.toString())) {
+            if(role.equals(Role.ADMIN)) {
                 getUser().setRole(role);
                 getBot().getUserManager().saveUser(getUser());
                 getBot().sendMessage(update.getMessage().getChatId(),"Вы успешно авторизовались!");

@@ -22,7 +22,7 @@ public class CreateSeminarCommand implements Command {
     @Override
     public boolean execute(Update update) {
         Optional<User> optUser = Optional.ofNullable(bot.getUserManager().getUser(update.getMessage().getChatId()));
-        if(optUser.isEmpty() || Role.valueOf(optUser.get().getRole()).getPriority() < Role.USER.getPriority()) {
+        if(optUser.isEmpty() || (optUser.get().getRole()).getPriority() < Role.USER.getPriority()) {
             bot.sendMessage(update.getMessage().getChatId(),"Недостаточно прав");
             return true;
         }

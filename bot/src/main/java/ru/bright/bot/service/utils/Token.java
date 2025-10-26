@@ -13,10 +13,10 @@ public class Token {
     @Getter
     private boolean active;
     @Getter
-    private String role;
+    private Role role;
     private Timer timer = Constants.TIMER;
 
-    public Token(int minutesToEnd, String role, String label) {
+    public Token(int minutesToEnd, Role role, String label) {
         this.active = true;
         this.role = role;
         this.label = label;

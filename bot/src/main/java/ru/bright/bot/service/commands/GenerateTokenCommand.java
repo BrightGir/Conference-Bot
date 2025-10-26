@@ -20,7 +20,7 @@ public class GenerateTokenCommand implements Command{
     @Override
     public boolean execute(Update update) {
         Optional<User> user = Optional.ofNullable(bot.getUserManager().getUser(update.getMessage().getChatId()));
-        if(!(Role.valueOf(user.get().getRole()).getPriority() >= Role.ADMIN.getPriority())) {
+        if(!((user.get().getRole()).getPriority() >= Role.ADMIN.getPriority())) {
             bot.sendMessage(update.getMessage().getChatId(),"Недостаточно прав");
             return true;
         }

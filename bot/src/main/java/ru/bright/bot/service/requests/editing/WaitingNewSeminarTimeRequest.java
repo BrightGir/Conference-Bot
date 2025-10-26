@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import ru.bright.bot.model.ScienceSeminar;
 import ru.bright.bot.model.User;
+import ru.bright.bot.model.dto.SeminarDTO;
 import ru.bright.bot.service.TelegramBot;
 import ru.bright.bot.service.requests.BaseRequest;
 
@@ -19,10 +20,10 @@ import java.util.TimeZone;
 public class WaitingNewSeminarTimeRequest extends BaseRequest {
 
     private static final Logger log = LoggerFactory.getLogger(WaitingNewSeminarTimeRequest.class);
-    private ScienceSeminar seminar;
+    private SeminarDTO seminar;
     private static final TimeZone MSK_TIMEZONE = TimeZone.getTimeZone("Europe/Moscow");
 
-    public WaitingNewSeminarTimeRequest(TelegramBot bot, User user, ScienceSeminar seminar) {
+    public WaitingNewSeminarTimeRequest(TelegramBot bot, User user, SeminarDTO seminar) {
         super(bot, user);
         this.seminar = seminar;
     }
@@ -61,13 +62,13 @@ public class WaitingNewSeminarTimeRequest extends BaseRequest {
         }
     }
 
-    private void checkAndSendRequest(Timestamp timestamp, ScienceSeminar seminar, long chatId) {
+    private void checkAndSendRequest(Timestamp timestamp, SeminarDTO seminar, long chatId) {
         if(getDelta(timestamp.getTime()) < 0) {
             getBot().sendMessage(getUser().getChatId(), "Введите корректную дату");
             return;
         }
         seminar.setTimestamp(timestamp);
-        getBot().getSeminarsManager().saveSeminar(seminar);
+        getBot().getSeminarsManager().updateSeminar(seminar);
         getBot().sendMessage(chatId,"Вы изменили дату семинара!");
     }
 

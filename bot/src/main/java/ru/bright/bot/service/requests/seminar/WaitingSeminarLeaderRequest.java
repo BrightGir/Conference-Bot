@@ -3,6 +3,7 @@ package ru.bright.bot.service.requests.seminar;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import ru.bright.bot.model.ScienceSeminar;
 import ru.bright.bot.model.User;
+import ru.bright.bot.model.dto.SeminarDTO;
 import ru.bright.bot.service.TelegramBot;
 import ru.bright.bot.service.requests.BaseRequest;
 
@@ -18,7 +19,7 @@ public class WaitingSeminarLeaderRequest extends BaseRequest {
 
     @Override
     public boolean handle(Update update) {
-        ScienceSeminar seminar = new ScienceSeminar();
+        SeminarDTO seminar = new SeminarDTO();
         String FIO = update.getMessage().getText();
         if(FIO.length() > 60) {
             getBot().sendMessage(update.getMessage().getChatId(),"Максимальное количество символов: 60");

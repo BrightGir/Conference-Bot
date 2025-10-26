@@ -6,6 +6,7 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import ru.bright.bot.model.ScienceSeminar;
 import ru.bright.bot.model.User;
+import ru.bright.bot.model.dto.SeminarDTO;
 import ru.bright.bot.service.TelegramBot;
 import ru.bright.bot.service.keyboards.InlinePagesKeyboard;
 
@@ -29,7 +30,7 @@ public class SeminarNotifiesCallbackAction implements CallbackAction{
     @Override
     public void action(Update update, User user) {
         long id = Long.parseLong(update.getCallbackQuery().getData().split("_")[2]);
-        ScienceSeminar seminar = bot.getSeminarsManager().findById(id);
+        SeminarDTO seminar = bot.getSeminarsManager().findById(id);
         List<String> pags = createPages(seminar);
         pagesMap.put(id,pags);
         InlinePagesKeyboard keyboard1 = new InlinePagesKeyboard(1,pags.size(),CallBackDates.SEMINAR_NOTIFIES_PAGE.toString() + "_" + id);
@@ -72,7 +73,7 @@ public class SeminarNotifiesCallbackAction implements CallbackAction{
     }
 
 
-    private List<String> createPages(ScienceSeminar seminar) {
+    private List<String> createPages(SeminarDTO seminar) {
         List<String> pages = new ArrayList<>();
         String currentPage = "";
         int str = 0;

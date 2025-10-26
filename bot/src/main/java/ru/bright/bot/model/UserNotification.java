@@ -6,7 +6,7 @@ import lombok.Setter;
 
 import java.io.Serializable;
 
-@Entity(name="userNotificationTable")
+@Entity
 public class UserNotification implements Serializable {
 
     @Getter
@@ -19,7 +19,7 @@ public class UserNotification implements Serializable {
     @GeneratedValue(strategy=GenerationType.IDENTITY)
     private long id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="seminar_id", referencedColumnName = "id")
     @Getter
     @Setter

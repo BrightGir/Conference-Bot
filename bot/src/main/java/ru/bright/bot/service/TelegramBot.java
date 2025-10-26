@@ -17,7 +17,6 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.Keyboard
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import ru.bright.bot.config.BotConfig;
-import ru.bright.bot.model.ScienceSeminar;
 import ru.bright.bot.model.User;
 import ru.bright.bot.model.dto.SeminarDTO;
 import ru.bright.bot.service.callbacks.*;
@@ -62,14 +61,15 @@ public class TelegramBot extends TelegramLongPollingBot {
 
     @Autowired
     private AdminKeyboard adminKeyboard;
+    @Getter
     private Map<Long, BaseRequest> requests;
     private Map<Long, TimerTask> requestsTimers;
-
     private Map<String, Token> tokens;
     private Timer timer = Constants.TIMER;
+    @Getter
     private Map<String, BiConsumer<Update,User>> callbackConsumerData;
+    @Getter
     private Map<String, CallbackAction> callbackData;
-    private final Map<String, String> lastMessageText = new ConcurrentHashMap<>();
 
     @Getter
     @Autowired
@@ -83,32 +83,27 @@ public class TelegramBot extends TelegramLongPollingBot {
     @Autowired
     private UserManager userManager;
 
-
-
     public TelegramBot(BotConfig config ) {
         this.config = config;
         this.updatesHandler = new UpdatesHandler(this);
         this.tokens = new HashMap<>();
-        this.requests = new HashMap<>();
-        this.requestsTimers = new HashMap<>();
+        this.requests = new ConcurrentHashMap<>();
+        this.requestsTimers = new ConcurrentHashMap<>();
         this.callbackConsumerData = new HashMap<>();
         this.callbackData = new HashMap<>();
-      //  this.seminarsManager = new SeminarsManager(seminarRepository);
         registerCommands();
         registerAdminToken();
         try {
             registerCallbackActions();
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Error while callback actions registering " + e.getMessage());
         }
     }
 
     private void registerAdminToken() {
-        Token token = new Token(Integer.MAX_VALUE, Role.ADMIN.toString(), config.getAdminToken());
+        Token token = new Token(Integer.MAX_VALUE, Role.ADMIN, config.getAdminToken());
         registerToken(token);
     }
-
-
 
     private void registerCallbackActions() {
 
@@ -120,7 +115,7 @@ public class TelegramBot extends TelegramLongPollingBot {
         this.registerCallbackData(CallBackDates.OWNSEMINARS.toString(),new SeminarsPageByChatIdCallbackAction(this));
         this.registerCallbackData(CallBackDates.BACK_TO_CATEGORIES.toString(),new BackToCategoriesCallbackAction(this));
         this.registerCallbackData(CallBackDates.BACK_TO_PANEL.toString(), (BiConsumer<Update, User>) (update, user) ->  {
-            ScienceSeminar seminar = this.getSeminarsManager().findById(Long.parseLong(update.getCallbackQuery().getData().split("_")[3]));
+            SeminarDTO seminar = this.getSeminarsManager().findById(Long.parseLong(update.getCallbackQuery().getData().split("_")[3]));
             String s = "Семинар *" + seminar.getName() + "*. ";
             editMessage(update.getCallbackQuery(),s + "Выберите действие:",new InlineSeminarPanelKeyboard(seminar.getId()),"Markdown");
         });
@@ -148,8 +143,8 @@ public class TelegramBot extends TelegramLongPollingBot {
         });
         this.registerCallbackData(CallBackDates.DELETE_SEMINAR_ACCEPT.toString(), (BiConsumer<Update, User>) (upd, user) -> {
             long seminarId = Long.parseLong(upd.getCallbackQuery().getData().split("_")[3]);
-            ScienceSeminar sem = this.getSeminarsManager().findById(seminarId);
-            this.getSeminarsManager().deleteSeminar(sem);
+            SeminarDTO sem = this.getSeminarsManager().findById(seminarId);
+            this.getSeminarsManager().deleteSeminar(sem.getId());
             editMessage(upd.getCallbackQuery(),"Семинар *" + sem.getName() + "* был удален", "Markdown");
         });
         this.registerCallbackData(CallBackDates.DELETE_SEMINAR_DENY.toString(), (BiConsumer<Update, User>) (upd, user) -> {
@@ -158,8 +153,8 @@ public class TelegramBot extends TelegramLongPollingBot {
 
         this.registerCallbackData(CallBackDates.LEAVE_SEMINAR_ACCEPT.toString(), (BiConsumer<Update, User>) (upd, user) -> {
             long seminarId = Long.parseLong(upd.getCallbackQuery().getData().split("_")[3]);
-            ScienceSeminar sem = this.getSeminarsManager().findById(seminarId);
-            getSeminarsManager().unjoinFrom(user,sem);
+            SeminarDTO sem = this.getSeminarsManager().findById(seminarId);
+            getSeminarsManager().unjoinFrom(user,sem.getId());
             editMessage(upd.getCallbackQuery(),"Вы успешно покинули семинар *" + sem.getName() + "*", "Markdown");
         });
         this.registerCallbackData(CallBackDates.LEAVE_SEMINAR_DENY.toString(), (BiConsumer<Update, User>) (upd, user) -> {
@@ -171,56 +166,39 @@ public class TelegramBot extends TelegramLongPollingBot {
     public void editMessage(CallbackQuery query, String text, InlineKeyboardMarkup keyboard, String parseMod) {
         int messageId = query.getMessage().getMessageId();
         long chatId = query.getMessage().getChatId();
-        try {
-
-            EditMessageText editMessageText = new EditMessageText();
-            editMessageText.setMessageId(messageId);
-            editMessageText.setText(text);
-            editMessageText.setParseMode(parseMod);
-            editMessageText.setChatId(chatId);
-            editMessageText.setReplyMarkup(keyboard);
-            this.executeMethod(editMessageText);
-        } catch (RuntimeException ex) {
-
-        }
+        EditMessageText editMessageText = new EditMessageText();
+        editMessageText.setMessageId(messageId);
+        editMessageText.setText(text);
+        editMessageText.setParseMode(parseMod);
+        editMessageText.setChatId(chatId);
+        editMessageText.setReplyMarkup(keyboard);
+        this.executeMethod(editMessageText);
     }
 
     public void editMessage(CallbackQuery query, String text, InlineKeyboardMarkup keyboard) {
-        try {
         EditMessageText editMessageText = new EditMessageText();
         editMessageText.setText(text);
         editMessageText.setChatId(query.getMessage().getChatId());
         editMessageText.setReplyMarkup(keyboard);
         editMessageText.setMessageId(query.getMessage().getMessageId());
         this.executeMethod(editMessageText);
-        } catch (RuntimeException ex) {
-
-        }
     }
 
     public void editMessage(CallbackQuery query, String text, String parseMod) {
-        try {
         EditMessageText editMessageText = new EditMessageText();
         editMessageText.setText(text);
         editMessageText.setParseMode(parseMod);
         editMessageText.setChatId(query.getMessage().getChatId());
         editMessageText.setMessageId(query.getMessage().getMessageId());
         this.executeMethod(editMessageText);
-        } catch (RuntimeException ex) {
-
-        }
     }
 
     public void editMessage(CallbackQuery query, String text) {
-        try {
         EditMessageText editMessageText = new EditMessageText();
         editMessageText.setText(text);
         editMessageText.setChatId(query.getMessage().getChatId());
         editMessageText.setMessageId(query.getMessage().getMessageId());
         this.executeMethod(editMessageText);
-        } catch (RuntimeException ex) {
-
-        }
     }
 
     private void registerCommands() {
@@ -246,20 +224,8 @@ public class TelegramBot extends TelegramLongPollingBot {
         callbackData.put(callBackData,action);
     }
 
-    public Map<String,BiConsumer<Update,User>> getCallbackConsumerData() {
-        return callbackConsumerData;
-    }
-
-    public Map<String, CallbackAction> getCallbackData() {
-        return callbackData;
-    }
-
     public void registerToken(Token token) {
         this.tokens.put(token.getLabel(),token);
-    }
-
-    public Map<String,Token> getTokens() {
-        return tokens;
     }
 
     public void sendRequest(BaseRequest request, int minutesToExpire) {
@@ -281,9 +247,9 @@ public class TelegramBot extends TelegramLongPollingBot {
         requestsTimers.put(chatId,task);
     }
 
-    public String getRoleByToken(String token) {
+    public Role getRoleByToken(String token) {
         if(token.equals(Constants.ADMIN_TOKEN)) {
-            return Role.ADMIN.toString();
+            return Role.ADMIN;
         }
         if(tokens.get(token) == null) {
             return null;
@@ -293,13 +259,6 @@ public class TelegramBot extends TelegramLongPollingBot {
 
     public Token getTokenByLabel(String name) {
         return tokens.get(name);
-    }
-
-    public Map<Long,TimerTask> getRequestsTimers() {
-        return requestsTimers;
-    }
-    public Map<Long,BaseRequest> getRequests() {
-        return requests;
     }
 
 
@@ -340,8 +299,8 @@ public class TelegramBot extends TelegramLongPollingBot {
             k.setKeyboard(Arrays.asList(row));
             sendMsg.setReplyMarkup(k);
         } else {
-            if (!optUser.get().getRole().equals(Role.UNAUTHORIZED_USER.toString())) {
-                if(optUser.get().getRole().equals(Role.ADMIN.toString())) {
+            if (optUser.get().getRole() != Role.UNAUTHORIZED_USER) {
+                if(optUser.get().getRole() == Role.ADMIN) {
                     sendMsg.setReplyMarkup(adminKeyboard);
                 } else {
                     sendMsg.setReplyMarkup(functionalReplyKeyBoard);
@@ -390,9 +349,10 @@ public class TelegramBot extends TelegramLongPollingBot {
     public void executeMethod(BotApiMethodSerializable method) {
         try {
             execute(method);
-        } catch (Exception e) {
+        } catch (TelegramApiException e) {
             log.error("Не удалось выполнить метод " + method.getMethod());
-          //  e.printStackTrace();
+        } catch (Exception ex) {
+            log.error("Критическая ошибка " + ex.getMessage());
         }
     }
 }

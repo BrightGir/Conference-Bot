@@ -33,7 +33,7 @@ public class SeminarScheduler {
         List<ScienceSeminar> seminarsToDelete = bot.getSeminarsManager()
                 .getExpiredSeminars(currentTime);
 
-        seminarsToDelete.forEach(s -> bot.getSeminarsManager().deleteSeminar(s));
+        seminarsToDelete.forEach(s -> bot.getSeminarsManager().deleteSeminar(s.getId()));
 
         List<UserNotification> activeNotifications =
                 bot.getUserNotificationManager().getExpiredNotifications(currentTime);

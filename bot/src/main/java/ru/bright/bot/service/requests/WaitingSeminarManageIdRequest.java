@@ -3,6 +3,7 @@ package ru.bright.bot.service.requests;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import ru.bright.bot.model.ScienceSeminar;
 import ru.bright.bot.model.User;
+import ru.bright.bot.model.dto.SeminarDTO;
 import ru.bright.bot.service.TelegramBot;
 import ru.bright.bot.service.keyboards.InlineEditActionsKeyboard;
 import ru.bright.bot.service.utils.Role;
@@ -29,7 +30,7 @@ public class WaitingSeminarManageIdRequest extends BaseRequest {
             getBot().sendMessage(getUser().getChatId(), "Семинара с таким ID не существует");
             return false;
         }
-        ScienceSeminar seminar = getBot().getSeminarsManager().findById(id);
+        SeminarDTO seminar = getBot().getSeminarsManager().findById(id);
         if(seminar.getChatIdOwner().longValue() != getUser().getChatId() && !getUser().getRole().equals(Role.ADMIN.toString())) {
             getBot().sendMessage(getUser().getChatId(), "Вы не являетесь руководителем семинара с таким ID");
             return false;

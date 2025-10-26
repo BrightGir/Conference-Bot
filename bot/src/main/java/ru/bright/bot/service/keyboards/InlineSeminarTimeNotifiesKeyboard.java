@@ -4,6 +4,7 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMa
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import ru.bright.bot.model.ScienceSeminar;
 import ru.bright.bot.model.User;
+import ru.bright.bot.model.dto.SeminarDTO;
 import ru.bright.bot.service.TelegramBot;
 import ru.bright.bot.service.callbacks.CallBackDates;
 
@@ -31,7 +32,7 @@ public class InlineSeminarTimeNotifiesKeyboard extends InlineKeyboardMarkup {
         List<InlineKeyboardButton> row3 = new ArrayList<>();
         List<InlineKeyboardButton> row4 = new ArrayList<>();
         String add = " ✅";
-        ScienceSeminar seminar = bot.getSeminarsManager().findById(seminarId);
+        SeminarDTO seminar = bot.getSeminarsManager().findById(seminarId);
 
         InlineKeyboardButton but1 = new InlineKeyboardButton();
         but1.setCallbackData(CallBackDates.TIME_NOTIFY.toString() + "_" + seminarId + "_" + "1");

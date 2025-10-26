@@ -10,7 +10,7 @@ import java.util.List;
 public interface UserNotificationRepository extends CrudRepository<UserNotification, Long> {
 
 
-    @Query("SELECT un FROM userNotificationTable un " +
+    @Query("SELECT un FROM UserNotification un " +
             "JOIN FETCH un.seminar s " +
             "JOIN FETCH un.user u " +
             "WHERE un.isNotified = false " +
@@ -19,20 +19,12 @@ public interface UserNotificationRepository extends CrudRepository<UserNotificat
             "AND s.timestamp > :currentTime")
     List<UserNotification> findActiveNotifications(@Param("currentTime") Timestamp currentTime);
 
-    @Query("SELECT un FROM userNotificationTable un " +
-            "WHERE un.seminar = :seminar " +
-            "AND un.user = :user")
-    List<UserNotification> findBySeminarAndUser(@Param("seminar") ScienceSeminar seminar, 
-                                                  @Param("user") User user);
+    @Query("SELECT un FROM UserNotification un " +
+            "JOIN FETCH un.seminar " +
+            "JOIN FETCH un.user " +
+            "WHERE un.seminar.id = :seminarId " +
+            "AND un.user.chatId = :userChatId")
+    List<UserNotification> findBySeminarAndUser(@Param("seminarId") long seminarId,
+                                                  @Param("userChatId") long chatId);
 
-    @Query("SELECT un FROM userNotificationTable un " +
-            "WHERE un.seminar = :seminar")
-    List<UserNotification> findBySeminar(@Param("seminar") ScienceSeminar seminar);
-
-    void deleteBySeminar(ScienceSeminar seminar);
-
-    @Query("SELECT un FROM userNotificationTable un " +
-            "JOIN FETCH un.seminar s " +
-            "WHERE un.user = :user")
-    List<UserNotification> findByUser(@Param("user") User user);
 }

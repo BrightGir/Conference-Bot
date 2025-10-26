@@ -5,8 +5,8 @@ import java.util.Random;
 public class TokenGenerator {
 
 
-    public static Token generateToken(int minutes, String role) {
-        return new Token(minutes, role.toString(), generateRandomString(15));
+    public static Token generateToken(int minutes, Role role) {
+        return new Token(minutes, role, generateRandomString(15));
     }
 
     public static String generateRandomString(int length) {

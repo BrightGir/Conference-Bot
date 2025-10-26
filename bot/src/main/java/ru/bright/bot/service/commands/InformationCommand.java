@@ -24,7 +24,7 @@ public class InformationCommand implements Command{
         Optional<ru.bright.bot.model.User> optCuser = Optional.ofNullable(bot.getUserManager().getUser(update.getMessage().getChatId()));
    
         ru.bright.bot.model.User cUser = optCuser.get();
-        b.append("Группа: " + Role.valueOf(cUser.getRole()).getName() + "\n");
+        b.append("Группа: " + (cUser.getRole()).getName() + "\n");
         b.append("ФИО: " + ((cUser.getFio() == null) ? "Не определено" : cUser.getFio()));
         bot.sendMessage(update.getMessage().getChatId(),b.toString(),new InlineProfileKeyboard(cUser));
         return true;

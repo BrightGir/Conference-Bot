@@ -31,7 +31,7 @@ public class OwnSeminarAdditionalInfoCallbackAction implements CallbackAction{
             e.printStackTrace();
             return;
         }
-        ScienceSeminar seminar = bot.getSeminarsManager().findById(id);
+        SeminarDTO seminar = bot.getSeminarsManager().findById(id);
         List<String> pages = seminarsPagesStore.getSeminarInfoPages(seminar.getId());
         bot.sendMessage(user.getChatId(), pages.get(0),new InlinePagesKeyboard(1,pages.size(),
                 CallBackDates.OWN_SEMINARS_ADDITIONAL_INFORMATION_PAGE + "_" + seminar.getId()),"Markdown");

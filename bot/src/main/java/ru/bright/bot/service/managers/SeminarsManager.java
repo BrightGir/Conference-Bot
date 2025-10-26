@@ -1,14 +1,8 @@
 package ru.bright.bot.service.managers;
 
 import lombok.extern.slf4j.Slf4j;
-import org.glassfish.grizzly.http.util.TimeStamp;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.CacheManager;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.CachePut;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import ru.bright.bot.model.*;
 import ru.bright.bot.model.dto.SeminarDTO;
 import ru.bright.bot.service.TelegramBot;
@@ -26,13 +20,14 @@ public class SeminarsManager {
     private SeminarRepository seminarRepository;
     private List<UpdateSeminarsListener> listeners;
     private List<ParticipateUserListener> participateListeners;
-    private CacheManager cacheManager;
+    private SeminarsCacheManager seminarsCacheManager;
 
-    public SeminarsManager(@Autowired SeminarRepository seminarRepository, @Autowired CacheManager cacheManager) {
+    public SeminarsManager(@Autowired SeminarRepository seminarRepository,
+                           @Autowired SeminarsCacheManager seminarsCacheManager) {
         this.seminarRepository = seminarRepository;
         this.listeners = new ArrayList<>();
         this.participateListeners = new ArrayList<>();
-        this.cacheManager = cacheManager;
+        this.seminarsCacheManager = seminarsCacheManager;
     }
 
     public void registerUpdateSeminarsListener(UpdateSeminarsListener listener) {
@@ -44,12 +39,12 @@ public class SeminarsManager {
     }
 
     public List<SeminarDTO> getByCategory(String category) {
-        return getAllSeminars().stream().filter(seminar -> (seminar.getSeminarCategoryEnum().equals(category)))
+        return seminarsCacheManager.getAllSeminars().stream().filter(seminar -> (seminar.getSeminarCategoryEnum().equals(category)))
                 .collect(Collectors.toList());
     }
 
     public List<SeminarDTO> getSeminarsByChatIdOwner(Long chatId) {
-        return getAllSeminars().stream().filter(seminar -> (seminar.getChatIdOwner().longValue() == chatId.longValue()))
+        return seminarsCacheManager.getAllSeminars().stream().filter(seminar -> (seminar.getChatIdOwner().longValue() == chatId.longValue()))
                 .collect(Collectors.toList());
     }
 
@@ -57,95 +52,46 @@ public class SeminarsManager {
         return seminarRepository.findFirstAvailableId();
     }
 
-    public void notify(TelegramBot bot, ScienceSeminar seminar, String message) {
+    public void notify(TelegramBot bot, SeminarDTO seminar, String message) {
         seminar.getMessages().add(message);
-        saveSeminar(seminar);
+        updateSeminar(seminar);
         for(User user: seminar.getParticipants()) {
-            //System.out.println(String.format("Participant %s: %s", user.getChatId(), user.getFIO()));
             if(user.getChatId().longValue() != seminar.getChatIdOwner()) {
                 bot.sendMessage(user.getChatId(), "Уведомление от семинара *" + seminar.getName() + "*:\n" + message, "Markdown");
             }
         }
     }
 
-    private void notifyListeners(ScienceSeminar seminar, boolean add) {
-        listeners.forEach(listener -> {
-            listener.update(seminar,add);
-        });
+    public void joinTo(User user, long seminarId) {
+        seminarsCacheManager.joinTo(user, seminarId);
     }
 
-    private void notifyListeners(User user, ScienceSeminar seminar) {
-        participateListeners.forEach(listener -> {
-            listener.participateUser(user,seminar);
-        });
+    public void unjoinFrom(User user, long seminarId) {
+        seminarsCacheManager.unjoinFrom(user, seminarId);
+    }
+
+    public SeminarDTO updateSeminar(SeminarDTO seminar) {
+        return seminarsCacheManager.updateSeminar(seminar);
+    }
+
+    public List<SeminarDTO> getAllSeminars() {
+        return seminarsCacheManager.getAllSeminars();
+    }
+
+    public SeminarDTO findById(long id) {
+        return seminarsCacheManager.findById(id);
+    }
+
+    public void deleteSeminar(long id) {
+        seminarsCacheManager.deleteSeminar(id);
+    }
+
+    public List<SeminarDTO> getSeminarsByUserId(long chatId) {
+        return seminarsCacheManager.getSeminarsByUserId(chatId);
     }
 
     public List<ScienceSeminar> getExpiredSeminars(Timestamp timestamp) {
-        return seminarRepository.findExpiredSeminars(timestamp);
-    }
-
-
-    @CacheEvict(value = "user_seminars", key = "#user.chatId")
-    public void joinTo(User user, ScienceSeminar seminar) {
-        seminar.getParticipants().add(user);
-        this.saveSeminar(seminar);
-        notifyListeners(user,seminar);
-    }
-
-    @CacheEvict(value = "user_seminars", key = "#user.chatId")
-    public void unjoinFrom(User user, ScienceSeminar seminar) {
-        seminar.getParticipants().remove(user);
-        this.saveSeminar(seminar);
-        notifyListeners(user,seminar);
-    }
-
-    @CachePut(value = { "seminars" }, key = "#result.id")
-    public SeminarDTO saveSeminar(ScienceSeminar seminar) {
-        ScienceSeminar savedSeminar = seminarRepository.save(seminar);
-        for (User participant : seminar.getParticipants()) {
-            cacheManager.getCache("user_seminars").evict(participant.getChatId());
-        }
-        SeminarDTO dto = SeminarDTO.from(savedSeminar);
-        notifyListeners(savedSeminar,true);
-        return dto;
-    }
-
-    @Cacheable(value = "allSeminars")
-    public List<SeminarDTO> getAllSeminars() {
-        List<SeminarDTO> seminars = new ArrayList<>();
-        // Используем метод с JOIN FETCH вместо findAll() для избежания N+1
-        seminarRepository.findAllWithParticipants().forEach(s -> {
-            seminars.add(SeminarDTO.from(s));
-        });
-        return seminars;
-    }
-
-    @Cacheable(value = "seminars", key = "#id")
-    public ScienceSeminar findById(long id) {
-        ScienceSeminar seminar = seminarRepository.findByIdWithParticipants(id).orElse(null);
-        if (seminar != null) {
-            seminar.setParticipants(new HashSet<>(seminar.getParticipants()));
-            seminar.setMessages(new ArrayList<>(seminar.getMessages()));
-        }
-        return seminar;
-    }
-
-    @CacheEvict(value = { "seminars" }, key = "#seminar.id")
-    public void deleteSeminar(ScienceSeminar seminar) {
-        seminarRepository.deleteById(seminar.getId());
-        for (User participant : seminar.getParticipants()) {
-            cacheManager.getCache("user_seminars").evict(participant.getChatId());
-        }
-        notifyListeners(seminar,false);
-    }
-
-    @Cacheable(value = "user_seminars", key = "#chatId")
-    public List<SeminarDTO> getSeminarsByUserId(long chatId) {
-        List<SeminarDTO> seminarDTOS = new ArrayList<>();
-        seminarRepository.findByUserId(chatId).forEach(s -> {
-            seminarDTOS.add(SeminarDTO.from(s));
-        });
-        return seminarDTOS;
+        return seminarRepository.findExpiredSeminarsWithParticipants(timestamp);
     }
 
 }

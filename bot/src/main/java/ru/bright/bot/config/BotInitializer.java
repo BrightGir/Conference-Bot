@@ -26,7 +26,7 @@ public class BotInitializer {
         System.out.println("Initializing Bot");
         try {
             telegramBotsApi.registerBot(telegramBot);
-            Token token = TokenGenerator.generateToken(10, Role.ADMIN.toString());
+            Token token = TokenGenerator.generateToken(Integer.MAX_VALUE, Role.ADMIN);
             telegramBot.registerToken(token);
         } catch (TelegramApiException e) {
             log.error("An error occurred " + e.getMessage());

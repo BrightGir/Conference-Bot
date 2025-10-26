@@ -17,7 +17,7 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
-@Entity(name="scienceSeminarsTable")
+@Entity
 public class ScienceSeminar implements Serializable {
 
     @Id
@@ -67,7 +67,7 @@ public class ScienceSeminar implements Serializable {
     private List<UserNotification> notifications = new ArrayList<>();
 
     @Getter
-    @ElementCollection(fetch = FetchType.EAGER)
+    @ElementCollection(fetch = FetchType.LAZY)
     @OrderColumn(name = "message_order")
     @Setter
     private List<String> messages = new ArrayList<>();

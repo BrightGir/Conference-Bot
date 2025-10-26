@@ -21,7 +21,7 @@ public class StartCommand implements Command{
         long chatId = update.getMessage().getChatId();
         if(bot.getUserManager().getUser(chatId) == null) {
             User user = new User();
-            user.setRole(Role.UNAUTHORIZED_USER.toString());
+            user.setRole(Role.UNAUTHORIZED_USER);
             user.setChatId(chatId);
             bot.getUserManager().saveUser(user);
             bot.sendMessage(chatId,"Добро пожаловать!");

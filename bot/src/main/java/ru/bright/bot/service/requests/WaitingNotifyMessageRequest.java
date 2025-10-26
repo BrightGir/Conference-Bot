@@ -8,8 +8,8 @@ import ru.bright.bot.service.TelegramBot;
 
 public class WaitingNotifyMessageRequest extends BaseRequest{
 
-    private ScienceSeminar seminar;
-    public WaitingNotifyMessageRequest(TelegramBot bot, User user, ScienceSeminar seminar) {
+    private SeminarDTO seminar;
+    public WaitingNotifyMessageRequest(TelegramBot bot, User user, SeminarDTO seminar) {
         super(bot, user);
         this.seminar = seminar;
     }

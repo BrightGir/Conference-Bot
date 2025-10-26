@@ -3,6 +3,7 @@ package ru.bright.bot.service.requests.editing;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import ru.bright.bot.model.ScienceSeminar;
 import ru.bright.bot.model.User;
+import ru.bright.bot.model.dto.SeminarDTO;
 import ru.bright.bot.service.TelegramBot;
 import ru.bright.bot.service.requests.BaseRequest;
 
@@ -27,7 +28,7 @@ public class WaitingEditSeminarIdRequest extends BaseRequest {
             getBot().sendMessage(update.getMessage().getChatId(),"Введите корректный ID");
             return false;
         }
-        ScienceSeminar seminar = getBot().getSeminarsManager().findById(id);
+        SeminarDTO seminar = getBot().getSeminarsManager().findById(id);
         if(seminar == null) {
             getBot().sendMessage(update.getMessage().getChatId(),"Вы не являетесь руководителем семинара с таким ID");
             return false;

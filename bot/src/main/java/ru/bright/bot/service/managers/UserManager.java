@@ -13,21 +13,18 @@ import ru.bright.bot.model.UserRepository;
 public class UserManager {
 
 
-    private UserRepository userRepository;
+    private UsersCacheManager usersCacheManager;
 
-    public UserManager(@Autowired UserRepository userRepository) {
-        this.userRepository = userRepository;
+    public UserManager(@Autowired UsersCacheManager usersCacheManager) {
+        this.usersCacheManager = usersCacheManager;
     }
 
-    @CachePut(value = "users", key = "#result.chatId")
     public User saveUser(User user) {
-        User savedUser = userRepository.save(user);
-        return savedUser;
+        return usersCacheManager.saveUser(user);
     }
 
-    @Cacheable(value = "users", key = "#chatId")
     public User getUser(long chatId) {
-        return userRepository.findById(chatId).orElse(null);
+        return usersCacheManager.getUser(chatId);
     }
 
 }

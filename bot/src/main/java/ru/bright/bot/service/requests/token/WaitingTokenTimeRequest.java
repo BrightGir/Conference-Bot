@@ -5,6 +5,7 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import ru.bright.bot.model.User;
 import ru.bright.bot.service.TelegramBot;
 import ru.bright.bot.service.requests.BaseRequest;
+import ru.bright.bot.service.utils.Role;
 import ru.bright.bot.service.utils.Token;
 import ru.bright.bot.service.utils.TokenGenerator;
 
@@ -13,8 +14,8 @@ import java.util.Random;
 @Slf4j
 public class WaitingTokenTimeRequest extends BaseRequest {
 
-    private String role;
-    public WaitingTokenTimeRequest(TelegramBot bot, User user, String role) {
+    private Role role;
+    public WaitingTokenTimeRequest(TelegramBot bot, User user, Role role) {
         super(bot, user);
         this.role = role;
     }

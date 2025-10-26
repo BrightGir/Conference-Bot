@@ -4,6 +4,7 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import ru.bright.bot.ApplicationContextProvider;
 import ru.bright.bot.model.ScienceSeminar;
 import ru.bright.bot.model.User;
+import ru.bright.bot.model.dto.SeminarDTO;
 import ru.bright.bot.service.TelegramBot;
 import ru.bright.bot.service.callbacks.CallBackDates;
 import ru.bright.bot.service.keyboards.InlinePagesKeyboard;
@@ -34,7 +35,7 @@ public class WaitingOwnSeminarAdditionalInfoIdRequest extends BaseRequest{
             getBot().sendMessage(update.getMessage().getChatId(),"Введите корректный ID");
             return false;
         }
-        ScienceSeminar seminar = getBot().getSeminarsManager().findById(id);
+        SeminarDTO seminar = getBot().getSeminarsManager().findById(id);
         if(seminar == null) {
             getBot().sendMessage(update.getMessage().getChatId(),"Семинара с таким ID не существует");
             return false;

@@ -3,14 +3,15 @@ package ru.bright.bot.service.requests;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import ru.bright.bot.model.ScienceSeminar;
 import ru.bright.bot.model.User;
+import ru.bright.bot.model.dto.SeminarDTO;
 import ru.bright.bot.service.TelegramBot;
 import ru.bright.bot.service.keyboards.confirm.InlineLeaveSeminarConfirmKeyboard;
 
 
 public class WaitingConfirmLeaveSeminarRequest extends BaseRequest {
 
-    private ScienceSeminar seminar;
-    public WaitingConfirmLeaveSeminarRequest(TelegramBot bot, User user, ScienceSeminar seminar) {
+    private SeminarDTO seminar;
+    public WaitingConfirmLeaveSeminarRequest(TelegramBot bot, User user, SeminarDTO seminar) {
         super(bot, user);
         this.seminar = seminar;
     }

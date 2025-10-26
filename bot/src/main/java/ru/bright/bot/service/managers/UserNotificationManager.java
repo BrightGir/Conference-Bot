@@ -1,14 +1,9 @@
 package ru.bright.bot.service.managers;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.CachePut;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
-import ru.bright.bot.model.ScienceSeminar;
-import ru.bright.bot.model.User;
-import ru.bright.bot.model.UserNotification;
-import ru.bright.bot.model.UserNotificationRepository;
+import ru.bright.bot.model.*;
+import ru.bright.bot.model.dto.SeminarDTO;
 
 import java.sql.Timestamp;
 import java.util.List;
@@ -16,24 +11,20 @@ import java.util.List;
 @Service
 public class UserNotificationManager {
 
+
     private final UserNotificationRepository userNotificationRepository;
+    private final SeminarRepository seminarRepository;
 
-    public UserNotificationManager(@Autowired UserNotificationRepository userNotificationRepository) {
+    public UserNotificationManager(@Autowired UserNotificationRepository userNotificationRepository,
+                                   @Autowired SeminarRepository seminarRepository) {
         this.userNotificationRepository = userNotificationRepository;
+        this.seminarRepository = seminarRepository;
     }
 
-    @CacheEvict(value = "notifications", key = "#un.seminar.id + '_' + #un.user.chatId")
-    public UserNotification saveNotify(UserNotification un) {
-        UserNotification not = userNotificationRepository.save(un);
-        return not;
+    public List<UserNotification> getUserNotificationsBySeminar(long seminarId, Long userChatId) {
+        return userNotificationRepository.findBySeminarAndUser(seminarId, userChatId);
     }
 
-    @Cacheable(value = "notifications", key = "#seminar.id + '_' + #user.chatId")
-    public List<UserNotification> getUserNotificationsBySeminar(ScienceSeminar seminar, User user) {
-        return userNotificationRepository.findBySeminarAndUser(seminar, user);
-    }
-
-    @CacheEvict(value = "notifications", key = "#un.seminar.id + '_' + #un.user.chatId")
     public void deleteNotification(UserNotification un) {
         userNotificationRepository.deleteById(un.getId());
     }
@@ -43,15 +34,15 @@ public class UserNotificationManager {
     }
 
 
-    public void changeTimeNotify(User user, ScienceSeminar seminar, int hour) {
+    public void changeTimeNotify(User user, SeminarDTO seminar, int hour) {
         boolean f = false;
-        for(UserNotification notify: getUserNotificationsBySeminar(seminar,user)) {
+        for(UserNotification notify: getUserNotificationsBySeminar(seminar.getId(), user.getChatId())) {
             if(notify.getHour() == hour) {
                 if(notify.isNotified()) {
                     return;
                 } else {
                     notify.setActive(!notify.isActive());
-                    saveNotify(notify);
+                    userNotificationRepository.save(notify);
                 }
                 f = true;
             }
@@ -61,14 +52,14 @@ public class UserNotificationManager {
             notify.setNotified(false);
             notify.setActive(true);
             notify.setHour(hour);
-            notify.setSeminar(seminar);
+            notify.setSeminar(seminarRepository.getReferenceById(seminar.getId()));
             notify.setUser(user);
-            saveNotify(notify);
+            userNotificationRepository.save(notify);
         }
     }
 
-    public boolean hasNotify(User user, ScienceSeminar seminar, int hour) {
-        for(UserNotification notification: getUserNotificationsBySeminar(seminar,user)) {
+    public boolean hasNotify(User user, SeminarDTO seminar, int hour) {
+        for(UserNotification notification: getUserNotificationsBySeminar(seminar.getId(), user.getChatId())) {
             if(notification.getHour() == hour) {
                 if(notification.isNotified()) {
                     return false;

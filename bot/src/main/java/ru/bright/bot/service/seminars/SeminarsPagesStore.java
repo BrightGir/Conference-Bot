@@ -19,7 +19,7 @@ import java.util.*;
 
 @Component
 @Slf4j
-public class SeminarsPagesStore implements UpdateSeminarsListener, ParticipateUserListener {
+public class SeminarsPagesStore {
 
     private SeminarsManager seminarsManager;
     private UserManager userManager;
@@ -37,13 +37,6 @@ public class SeminarsPagesStore implements UpdateSeminarsListener, ParticipateUs
         this.pagesByOwnerId = new HashMap<>();
         this.joinedPagesByOwnerId = new HashMap<>();
         this.pagesBySeminarPrimaryIdInfo = new HashMap<>();
-    }
-
-    @PostConstruct
-    public void init() {
-  //      initPages();
-    //    initSeminarInfoAll();
-        registerClassAsListener();
     }
 
     public String getPage(String category, int page) {
@@ -71,10 +64,6 @@ public class SeminarsPagesStore implements UpdateSeminarsListener, ParticipateUs
         });
     }
 
-    private void registerClassAsListener() {
-        seminarsManager.registerUpdateSeminarsListener(this);
-        seminarsManager.registerParticipateUserListener(this);
-    }
 
     private void initPages() {
         for(SeminarCategory category: SeminarCategory.values()) {
@@ -104,7 +93,7 @@ public class SeminarsPagesStore implements UpdateSeminarsListener, ParticipateUs
         if(!currentPage.isEmpty()) {
             pages.add(currentPage);
         } else {
-            if(pages.size() == 0) {
+            if(pages.isEmpty()) {
                 pages.add("Семинаров нет.");
             }
         }
@@ -131,7 +120,7 @@ public class SeminarsPagesStore implements UpdateSeminarsListener, ParticipateUs
         if(!currentPage.isEmpty()) {
             pages.add(currentPage);
         } else {
-            if(pages.size() == 0) {
+            if(pages.isEmpty()) {
                 pages.add("У вас нет семинаров.");
             }
         }
@@ -154,11 +143,11 @@ public class SeminarsPagesStore implements UpdateSeminarsListener, ParticipateUs
     }
 
     private void initInfoPageForSeminar(long id) {
-        ScienceSeminar seminar = seminarsManager.findById(id);
+        SeminarDTO seminar = seminarsManager.findById(id);
         List<String> pages = new ArrayList<>();
         String currentPage = "";
         int addStr = 4 + seminar.getAdditionalInformation().split("\n").length;
-        currentPage += seminarInfo(SeminarDTO.from(seminar));
+        currentPage += seminarInfo(seminar);
         currentPage += "\n";
         currentPage += seminar.getAdditionalInformation();
         currentPage += "\n\n";
@@ -209,26 +198,26 @@ public class SeminarsPagesStore implements UpdateSeminarsListener, ParticipateUs
     }
 
 
-    @Override
-    public void update(ScienceSeminar seminar, boolean add) {
-        initPagesByCategory(seminar.getSeminarCategoryEnum());
-        initPagesByOwnerId(seminar.getChatIdOwner());
-        if(!add) {
-            for(User user: seminar.getParticipants()) {
-                initJoinedPages(user.getChatId());
-            }
-        } else {
-            initInfoPageForSeminar(seminar.getId());
-        }
-    }
+//   @Override
+//   public void update(ScienceSeminar seminar, boolean add) {
+//       initPagesByCategory(seminar.getSeminarCategoryEnum());
+//       initPagesByOwnerId(seminar.getChatIdOwner());
+//       if(!add) {
+//           for(User user: seminar.getParticipants()) {
+//               initJoinedPages(user.getChatId());
+//           }
+//       } else {
+//           initInfoPageForSeminar(seminar.getId());
+//       }
+//   }
 
-    public int getMaxPages(String category) {
-        return categoryPages.get(category).size();
-    }
+   public int getMaxPages(String category) {
+       return categoryPages.get(category).size();
+   }
 
-    @Override
-    public void participateUser(User user, ScienceSeminar seminar) {
-        initJoinedPages(user.getChatId());
-        initInfoPageForSeminar(seminar.getId());
-    }
+//   @Override
+//   public void participateUser(User user, ScienceSeminar seminar) {
+//       initJoinedPages(user.getChatId());
+//       initInfoPageForSeminar(seminar.getId());
+//   }
 }

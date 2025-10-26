@@ -7,6 +7,7 @@ import ru.bright.bot.service.utils.Role;
 import ru.bright.bot.service.TelegramBot;
 
 public class WaitingRoleRequest extends BaseRequest{
+
     public WaitingRoleRequest(TelegramBot bot, User user) {
         super(bot, user);
     }
@@ -33,7 +34,7 @@ public class WaitingRoleRequest extends BaseRequest{
         message = message.trim();
         try {
             Role role = Role.valueOf(message);
-            getBot().sendRequest(new WaitingTokenTimeRequest(getBot(),getUser(),role.toString()),3);
+            getBot().sendRequest(new WaitingTokenTimeRequest(getBot(),getUser(),role),3);
             return false;
         } catch (IllegalArgumentException e) {
             StringBuilder b = new StringBuilder("Введите корректную группу пользователя");

@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import ru.bright.bot.model.ScienceSeminar;
 import ru.bright.bot.model.User;
+import ru.bright.bot.model.dto.SeminarDTO;
 import ru.bright.bot.service.TelegramBot;
 import ru.bright.bot.service.requests.BaseRequest;
 
@@ -17,8 +18,8 @@ import java.util.TimeZone;
 
 @Slf4j
 public class WaitingSeminarTimeRequest extends BaseRequest {
-    private ScienceSeminar seminar;
-    public WaitingSeminarTimeRequest(TelegramBot bot, User user, ScienceSeminar seminar) {
+    private SeminarDTO seminar;
+    public WaitingSeminarTimeRequest(TelegramBot bot, User user, SeminarDTO seminar) {
         super(bot, user);
         this.seminar = seminar;
     }
@@ -60,7 +61,7 @@ public class WaitingSeminarTimeRequest extends BaseRequest {
         return false;
     }
 
-    private void checkAndSendRequest(Timestamp timestamp, ScienceSeminar seminar) {
+    private void checkAndSendRequest(Timestamp timestamp, SeminarDTO seminar) {
         if(getDelta(timestamp.getTime()) < 0) {
             getBot().sendMessage(getUser().getChatId(), "Введите корректную дату");
             return;

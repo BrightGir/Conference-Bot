@@ -4,12 +4,12 @@ import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageTe
 import org.telegram.telegrambots.meta.api.objects.Update;
 import ru.bright.bot.model.ScienceSeminar;
 import ru.bright.bot.model.User;
+import ru.bright.bot.model.dto.SeminarDTO;
 import ru.bright.bot.service.TelegramBot;
 import ru.bright.bot.service.callbacks.CallBackDates;
 import ru.bright.bot.service.keyboards.confirm.InlineCreateSeminarConfirmKeyboard;
 
 import java.text.DecimalFormat;
-import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.TextStyle;
@@ -18,8 +18,9 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.BiConsumer;
 
 public class WaitingConfirmSeminarCreateRequest extends BaseRequest {
-    private ScienceSeminar seminar;
-    public WaitingConfirmSeminarCreateRequest(TelegramBot bot, User user, ScienceSeminar seminar) {
+    private SeminarDTO seminar;
+
+    public WaitingConfirmSeminarCreateRequest(TelegramBot bot, User user, SeminarDTO seminar) {
         super(bot, user);
         this.seminar = seminar;
     }
@@ -52,7 +53,7 @@ public class WaitingConfirmSeminarCreateRequest extends BaseRequest {
                 }
                 seminar.setId(newId);
             }
-            getBot().getSeminarsManager().saveSeminar(seminar);
+            getBot().getSeminarsManager().updateSeminar(seminar);
             EditMessageText editMessageText = new EditMessageText();
             editMessageText.setText(finalStr);
             editMessageText.setParseMode("Markdown");

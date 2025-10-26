@@ -3,6 +3,7 @@ package ru.bright.bot.service.requests;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import ru.bright.bot.model.ScienceSeminar;
 import ru.bright.bot.model.User;
+import ru.bright.bot.model.dto.SeminarDTO;
 import ru.bright.bot.service.TelegramBot;
 
 import java.text.DecimalFormat;
@@ -10,6 +11,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.TextStyle;
 import java.util.Locale;
+import java.util.Objects;
 
 public class WaitingSeminarIdToJoinRequest extends BaseRequest {
 
@@ -35,11 +37,12 @@ public class WaitingSeminarIdToJoinRequest extends BaseRequest {
             getBot().sendMessage(getUser().getChatId(), "Семинара с таким ID не существует");
             return false;
         }
-        ScienceSeminar seminar = getBot().getSeminarsManager().findById(id);
+        SeminarDTO seminar = getBot().getSeminarsManager().findById(id);
         if(seminar.getChatIdOwner().longValue() == getUser().getChatId()) {
             getBot().sendMessage(getUser().getChatId(), "Вы не можете присоединиться к своему семинару");
             return false;
-        } else if(seminar.getParticipants() != null && seminar.getParticipants().contains(getUser())) {
+        } else if(seminar.getParticipants() != null &&
+                seminar.getParticipants().stream().anyMatch(p -> Objects.equals(p.getChatId(), getUser().getChatId()))) {
             getBot().sendMessage(getUser().getChatId(), "Вы уже участвуете в этом семинаре");
             return false;
         }
@@ -49,7 +52,7 @@ public class WaitingSeminarIdToJoinRequest extends BaseRequest {
         String monthString = zdt.getMonth().getDisplayName(TextStyle.FULL,new Locale("ru"));
         String s = "_" + zdt.getDayOfMonth() + " " + monthString.substring(0,1).toUpperCase() + monthString.substring(1) + " " + zdt.getYear() + " " +
                 zdt.getHour()  + ":" + new DecimalFormat("00").format(zdt.getMinute())  + "_";
-        getBot().getSeminarsManager().joinTo(getUser(),seminar);
+        getBot().getSeminarsManager().joinTo(getUser(),seminar.getId());
         getBot().sendMessage(getUser().getChatId(), "Вы успешно присоединились к семинару *" + seminar.getName() + "*,\nкоторый пройдет " +
                 s,"Markdown");
         return true;

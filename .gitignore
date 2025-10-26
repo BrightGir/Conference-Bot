@@ -1,1 +1,6 @@
 .env.local
+.gradle/
+.idea/
+bot/.gradle/
+bot/build/
+bot/bin/
